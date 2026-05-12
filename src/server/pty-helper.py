@@ -14,7 +14,11 @@ def set_winsize(fd, rows, cols):
 def main():
     default_shell = '/bin/zsh' if sys.platform == 'darwin' else '/bin/bash'
 
-    cwd = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('HOME', '/tmp')
+    cwd = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else (os.environ.get("HOME") or os.environ.get("HERMES_HOME") or "/tmp").strip() or "/tmp"
+    )
     cols = int(sys.argv[2]) if len(sys.argv) > 2 else 80
     rows = int(sys.argv[3]) if len(sys.argv) > 3 else 24
 
@@ -31,6 +35,18 @@ def main():
 
     if cwd.startswith('~'):
         cwd = os.path.expanduser(cwd)
+
+    # Node caller should validate cwd, but Coolify / missing HOME can still pass a
+    # non-existent path (e.g. /home/workspace/.hermes). Never let chdir crash the PTY.
+    if not os.path.isdir(cwd):
+        home = (
+            os.environ.get("HOME", "").strip()
+            or os.environ.get("HERMES_HOME", "").strip()
+        )
+        if home and os.path.isdir(home):
+            cwd = home
+        elif os.path.isdir("/tmp"):
+            cwd = "/tmp"
 
     # Create PTY
     master_fd, slave_fd = pty.openpty()

@@ -37,7 +37,7 @@ vi.mock('../../../server/auth-middleware', () => ({
 }))
 
 vi.mock('../../../server/gateway-capabilities', () => ({
-  BEARER_TOKEN: '',
+  getGatewayBearerToken: () => '',
   CLAUDE_API: 'http://127.0.0.1:8642',
 }))
 

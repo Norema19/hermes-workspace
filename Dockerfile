@@ -45,8 +45,16 @@ COPY --from=build --chown=workspace:workspace /app/package.json ./package.json
 COPY --from=build --chown=workspace:workspace /app/server-entry.js ./server-entry.js
 COPY --from=build --chown=workspace:workspace /app/skills ./skills
 
+# Writable home for PTY/sessions when not overridden by a volume mount.
+RUN mkdir -p /opt/data && chown workspace:workspace /opt/data
+
 USER workspace
-ENV NODE_ENV=production \
+# Terminal PTY + session paths: align with docker-compose.coolify-hermes.yml (HOME=/opt/data).
+# Without this, Node `os.homedir()` follows passwd for `workspace`, often /home/workspace, which
+# may not exist — client-sent ~/.hermes then becomes /home/workspace/.hermes → FileNotFoundError in pty-helper.
+ENV HOME=/opt/data \
+    HERMES_HOME=/opt/data \
+    NODE_ENV=production \
     PORT=3000 \
     HOST=0.0.0.0 \
     HERMES_API_URL=http://hermes-agent:8642

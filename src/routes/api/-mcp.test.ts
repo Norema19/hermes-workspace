@@ -168,7 +168,7 @@ describe('Phase 1.5 fallback — capability gating shape', () => {
     vi.doMock('../../server/gateway-capabilities', () => ({
       ensureGatewayProbed: () => Promise.resolve(fakeCaps),
       getCapabilities: () => fakeCaps,
-      BEARER_TOKEN: '',
+      getGatewayBearerToken: () => '',
       CLAUDE_API: 'http://127.0.0.1:8642',
       CLAUDE_UPGRADE_INSTRUCTIONS: 'noop',
       dashboardFetch: () => Promise.resolve(new Response(null, { status: 404 })),

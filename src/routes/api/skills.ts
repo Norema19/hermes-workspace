@@ -5,12 +5,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
 import { isAuthenticated } from '../../server/auth-middleware'
 import {
-  BEARER_TOKEN,
   CLAUDE_API,
   CLAUDE_UPGRADE_INSTRUCTIONS,
   dashboardFetch,
   ensureGatewayProbed,
   getCapabilities,
+  getGatewayBearerToken,
 } from '../../server/gateway-capabilities'
 import { requireJsonContentType } from '../../server/rate-limit'
 import { createCapabilityUnavailablePayload } from '@/lib/feature-gates'
@@ -362,7 +362,8 @@ function normalizeSkill(value: unknown): SkillSummary | null {
 async function fetchClaudeSkills(): Promise<Array<SkillSummary>> {
   const capabilities = getCapabilities()
   const headers: Record<string, string> = {}
-  if (BEARER_TOKEN) headers['Authorization'] = `Bearer ${BEARER_TOKEN}`
+  const bearer = getGatewayBearerToken()
+  if (bearer) headers['Authorization'] = `Bearer ${bearer}`
 
   const response = capabilities.dashboard.available
     ? await dashboardFetch('/api/skills')
@@ -600,7 +601,8 @@ export const Route = createFileRoute('/api/skills')({
           const headers: Record<string, string> = {
             'Content-Type': 'application/json',
           }
-          if (BEARER_TOKEN) headers['Authorization'] = `Bearer ${BEARER_TOKEN}`
+          const bearer = getGatewayBearerToken()
+  if (bearer) headers['Authorization'] = `Bearer ${bearer}`
 
           const response = await fetch(`${CLAUDE_API}${endpoint}`, {
             method: 'POST',

@@ -63,7 +63,13 @@ export function createTerminalSession(params: {
   const emitter = new EventEmitter()
   const sessionId = randomUUID()
 
-  const home = process.env.HOME ?? homedir() ?? '/tmp'
+  // Prefer compose-injected HOME (e.g. /opt/data), then HERMES_HOME (Coolify often sets one but not
+  // the other), then passwd homedir — the `workspace` user may have /home/workspace in passwd
+  // without that directory existing, which breaks ~/.hermes expansion (pty-helper FileNotFoundError).
+  const hermesHome = process.env.HERMES_HOME?.trim() || ''
+  const envHome =
+    process.env.HOME?.trim() || hermesHome
+  const sysHome = (homedir() ?? '').trim() || ''
   const defaultShell =
     process.platform === 'win32'
       ? 'powershell.exe'
@@ -73,12 +79,19 @@ export function createTerminalSession(params: {
   const command = params.command?.length
     ? params.command
     : [process.env.SHELL ?? defaultShell]
-  let cwd = params.cwd ?? home
+  const tildeBase = envHome || sysHome || '/'
+  let cwd =
+    typeof params.cwd === 'string' && params.cwd.trim().length > 0
+      ? params.cwd.trim()
+      : envHome || sysHome || '/tmp'
   if (cwd.startsWith('~')) {
-    cwd = cwd.replace('~', home)
+    cwd = cwd.replace(/^~/, tildeBase)
   }
   if (!existsSync(cwd)) {
-    cwd = home
+    if (envHome && existsSync(envHome)) cwd = envHome
+    else if (hermesHome && existsSync(hermesHome)) cwd = hermesHome
+    else if (sysHome && existsSync(sysHome)) cwd = sysHome
+    else cwd = '/tmp'
   }
 
   const cols = params.cols ?? 80

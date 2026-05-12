@@ -2,12 +2,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
 import { isAuthenticated } from '../../server/auth-middleware'
 import {
-  BEARER_TOKEN,
   CLAUDE_API,
   CLAUDE_UPGRADE_INSTRUCTIONS,
   dashboardFetch,
   ensureGatewayProbed,
   getCapabilities,
+  getGatewayBearerToken,
 } from '../../server/gateway-capabilities'
 import { requireJsonContentType, safeErrorMessage } from '../../server/rate-limit'
 import {
@@ -32,8 +32,9 @@ async function mcpFetch(path: string, init: RequestInit = {}): Promise<Response>
     return dashboardFetch(path, init)
   }
   const headers = new Headers(init.headers)
-  if (BEARER_TOKEN && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${BEARER_TOKEN}`)
+  const bearer = getGatewayBearerToken()
+  if (bearer && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${bearer}`)
   }
   return fetch(`${CLAUDE_API}${path}`, { ...init, headers })
 }

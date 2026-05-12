@@ -385,7 +385,7 @@
 | `OPENROUTER_API_KEY`   | OpenRouter API key passthrough (optional)          |
 | `GOOGLE_API_KEY`       | Google Gemini API key passthrough (optional)       |
 | `HERMES_API_TOKEN`     | Auth token for gateway API_SERVER_KEY              |
-| `BEARER_TOKEN`         | Bearer token for backend auth                      |
+| `getGatewayBearerToken()` | Bearer token for gateway HTTP auth (`HERMES_API_TOKEN` / `CLAUDE_API_TOKEN`) |
 | `PORT`                 | Server port (default: 3002 dev, 3000 prod)         |
 
 ### 4.6 Claude Config Management

@@ -258,8 +258,18 @@ let lastLoggedSummary = ''
 let dashboardTokenPromise: Promise<string> | null = null
 let dashboardTokenCache = ''
 
-/** Optional bearer token for authenticated gateway endpoints. */
-export const BEARER_TOKEN = process.env.HERMES_API_TOKEN || process.env.CLAUDE_API_TOKEN || ''
+/**
+ * Bearer for Hermes Agent OpenAI-compatible gateway (`API_SERVER_KEY` →
+ * `HERMES_API_TOKEN` / `CLAUDE_API_TOKEN` in the workspace).
+ *
+ * Read at **call time**, not module load: under vite-node SSR the first
+ * evaluation of this module can see an empty `process.env` snapshot even
+ * though the container later has `HERMES_API_TOKEN` set (same pattern as
+ * `openai-compat-api.ts` `getBearerToken()`).
+ */
+export function getGatewayBearerToken(): string {
+  return (process.env.HERMES_API_TOKEN || process.env.CLAUDE_API_TOKEN || '').trim()
+}
 
 /**
  * Optional explicit bearer token for dashboard API calls.
@@ -280,7 +290,8 @@ export const BEARER_TOKEN = process.env.HERMES_API_TOKEN || process.env.CLAUDE_A
 const DASHBOARD_BEARER_TOKEN = process.env.HERMES_DASHBOARD_TOKEN || process.env.CLAUDE_DASHBOARD_TOKEN || ''
 
 function authHeaders(): Record<string, string> {
-  return BEARER_TOKEN ? { Authorization: `Bearer ${BEARER_TOKEN}` } : {}
+  const t = getGatewayBearerToken()
+  return t ? { Authorization: `Bearer ${t}` } : {}
 }
 
 let loggedHtmlScrapeFallback = false

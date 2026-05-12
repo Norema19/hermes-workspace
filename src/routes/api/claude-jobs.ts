@@ -4,17 +4,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { isAuthenticated } from '../../server/auth-middleware'
 import {
-  BEARER_TOKEN,
   CLAUDE_API,
   CLAUDE_UPGRADE_INSTRUCTIONS,
   dashboardFetch,
   ensureGatewayProbed,
   getCapabilities,
+  getGatewayBearerToken,
 } from '../../server/gateway-capabilities'
 import { createCapabilityUnavailablePayload } from '@/lib/feature-gates'
 
 function authHeaders(): Record<string, string> {
-  return BEARER_TOKEN ? { Authorization: `Bearer ${BEARER_TOKEN}` } : {}
+  const t = getGatewayBearerToken()
+  return t ? { Authorization: `Bearer ${t}` } : {}
 }
 
 /**

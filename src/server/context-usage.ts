@@ -1,9 +1,9 @@
 import {
-  BEARER_TOKEN,
   CLAUDE_API,
   dashboardFetch,
   ensureGatewayProbed,
   getCapabilities,
+  getGatewayBearerToken,
 } from '@/server/gateway-capabilities'
 import { getLocalMessages, getLocalSession } from '@/server/local-session-store'
 
@@ -55,7 +55,8 @@ function getContextWindow(model: string): number {
 }
 
 function authHeaders(): Record<string, string> {
-  return BEARER_TOKEN ? { Authorization: `Bearer ${BEARER_TOKEN}` } : {}
+  const t = getGatewayBearerToken()
+  return t ? { Authorization: `Bearer ${t}` } : {}
 }
 
 function emptySnapshot(): ContextUsageSnapshot {
